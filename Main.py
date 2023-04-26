@@ -24,7 +24,7 @@ punc = "！？｡。＂＃＄％＆＇（）＊＋，－／：；＜＝＞＠［
 
 # skipped directories
 # SKIP = ["0", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
-SKIP = ["0", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
+SKIP = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
 # SKIP = []
 
 
@@ -77,6 +77,7 @@ afterRareTokens = [word for word in allTokens if word in words]
 charSet = set(afterRareTokens)
 chars = sorted(list(charSet))
 char_to_int = dict((c, i) for i, c in enumerate(chars))
+int_to_char = dict((i, c) for i, c in enumerate(chars))
 
 numWords = len(afterRareTokens)
 numVocab = len(charSet)
