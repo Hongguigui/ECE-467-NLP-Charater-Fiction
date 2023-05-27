@@ -1,6 +1,6 @@
 import pathlib
 import os
-from keras.layers import Embedding, LSTM, Dense, Dropout
+from keras.layers import Dense, Dropout, Activation, LSTM, Bidirectional, Embedding
 from keras.preprocessing.text import Tokenizer
 from keras.callbacks import EarlyStopping
 from keras.models import Sequential
@@ -24,8 +24,11 @@ punc = "！？｡。＂＃＄％＆＇（）＊＋，－／：；＜＝＞＠［
 
 # skipped directories
 # SKIP = ["0", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
-SKIP = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
+SKIP = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v",
+        "w", "x", "y", "z"]
 # SKIP = []
+
+t1 = time.time()
 
 
 def get_all_items(root: pathlib.Path, exclude):
@@ -44,7 +47,6 @@ def get_all_items(root: pathlib.Path, exclude):
 largeDir = pathlib.Path("./Books")
 BookList = get_all_items(largeDir, SKIP)
 BookList = [item for sublist in BookList for item in sublist]
-
 
 # clean the dataset
 # for path in BookList:
@@ -69,43 +71,40 @@ bigString = re.sub(r'[^\w\s]', '', bigString)
 
 # list of the words in their original order
 allTokens = jieba.lcut(bigString, cut_all=False)
-freqDist = nltk.FreqDist(allTokens)
-words = freqDist.most_common(50000)
+t2 = time.time()
+print("Runtime for this cell in seconds: ", t2 - t1)
+print("Corpus length in words: ", len(allTokens))
 
-afterRareTokens = [word for word in allTokens if word in words]
+os.remove('vocab.txt')
+minFreq = 10
+wordFreq = {}
+for token in allTokens:
+    wordFreq[token] = wordFreq.get(token, 0) + 1
 
-charSet = set(afterRareTokens)
-chars = sorted(list(charSet))
-char_to_int = dict((c, i) for i, c in enumerate(chars))
-int_to_char = dict((i, c) for i, c in enumerate(chars))
+rareWords = set()
+for k, v in wordFreq.items():
+    if wordFreq[k] < minFreq:
+        rareWords.add(k)
 
-numWords = len(afterRareTokens)
-numVocab = len(charSet)
+words = set(allTokens)
+print("Unique words before filter: ", len(words))
+print("To reduce vocab size, neglect words with appearances < ", minFreq)
+words = sorted(set(words) - rareWords)
+print("Unique words after filter: ", len(words))
 
-print(afterRareTokens)
+words_file_path = "vocab.txt"
 
-print("Number of words: ", numWords)
-print("Vocab size: ", numVocab)
+words_file = open(words_file_path, 'w')
+words_file.write(words)
 
-# seqLen = 100
-# dataX = []
-# dataY = []
-# for i in range(0, numWords - seqLen, 1):
-#     seqIn = allTokens[i:i + seqLen]
-#     seqOut = allTokens[i + seqLen]
-#     dataX.append([char_to_int[char] for char in seqIn])
-#     dataY.append(char_to_int[seqOut])
-# nPatterns = len(dataX)
-# print("Total Patterns: ", nPatterns)
-#
-# # reshape X to be [samples, time steps, features]
-# X = np.reshape(dataX, (nPatterns, seqLen, 1))
-# # normalize
-# X = X / float(numVocab)
-# # one hot encode the output variable
-# y = to_categorical(dataY)
-# print(y)
-# print(y.shape)
+for w in words:
+    print(w)
+    if w != "\n":
+        words_file.write(w)
+        words_file.write("\n")
+    else:
+        words_file.write(w)
+words_file.close()
 
-
-
+wordAsKey = dict((c, i) for i, c in enumerate(words))
+intAsKey = dict((i, c) for i, c in enumerate(words))
